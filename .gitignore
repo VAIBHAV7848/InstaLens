@@ -1,0 +1,23 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Playwright session state and credentials
+playwright_session_*.json
+session_*
+vibezforyou999
+
+# Screenshots and images
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# IDE configs
+.vscode/
+.idea/
