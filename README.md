@@ -18,17 +18,16 @@ InstaLens is a premium, developer-friendly Instagram OSINT & content analysis to
     *   **Manual Input**: Drag-and-drop screenshots or paste raw text.
 *   🖼️ **Tesseract OCR Integration**: Instantly extract text and captions from uploaded images or screenshot logs.
 *   🧠 **Token-Based NLP Taxonomy**: Pre-configured taxonomy with high-precision classification models covering dozens of popular categories (e.g., Tech, Gaming, Fitness, Travel, Finance).
-*   🎨 **Premium Glassmorphic UI**: High-fidelity dark mode dashboard with animations, category progress bars, and keyword tag clouds.
 *   🛡️ **Smart Login Security Bypass**: Automatically prompts and executes in **Headful Mode** (`headless=False`) if Instagram triggers security verifications (SMS/Email OTP or Captchas), letting you authenticate securely.
 
 ---
 
 ## 🛠️ Tech Stack
 
-*   **Backend**: Python, Flask
+*   **Language & Runtime**: Python 3.11+
+*   **Web Framework**: Flask
 *   **Automation**: Playwright (Chromium)
 *   **OCR**: Tesseract OCR (via `pytesseract`)
-*   **Frontend**: Vanilla HTML5, CSS3 (Custom Glassmorphism), and ES6+ JavaScript
 
 ---
 
@@ -68,7 +67,7 @@ Open **`http://localhost:5000`** in your browser to start using InstaLens.
 
 ## 💡 How It Works
 
-1.  **Session Establishment**: Log into your Instagram account through the web interface. If a login verification challenge is met, a browser window will open on your desktop to let you resolve it.
+1.  **Session Establishment**: Authenticate with Instagram. If a login verification challenge is met, a headful browser window will open on your desktop to let you resolve it.
 2.  **Scraping**: Select either the **Posts & Reels** grid or the **Reposts** tab of your target.
 3.  **OCR & NLP**: The system reads all captions and screenshot text, tokenizes key terms, matches them with the `TOPIC_TAXONOMY` database, and evaluates scores.
 4.  **Insights**: Instantly view interest breakdowns, repeated keywords, and conversation suggestions customized to the target's style.
