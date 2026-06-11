@@ -37,41 +37,85 @@
                 </div>
                 <h1>Insta<span class="gradient-text">Lens</span></h1>
             </div>
-            <p class="tagline">Discover what someone loves talking about</p>
+            <p class="tagline">Local Instagram Insight Analyzer</p>
         </header>
 
         <!-- Main View Container -->
         <main>
             <!-- 1. LOGIN GATEWAY VIEW -->
             <section class="login-view glass-card" id="login-view">
-                <h2 class="section-title" style="justify-content: center; margin-bottom: 0.5rem; font-size: 1.3rem;">
-                    <span class="section-icon">🔐</span> Connect Instagram
-                </h2>
-                <p class="section-desc" style="text-align: center; max-width: 460px; margin: 0 auto 1.5rem;">
-                    Log into Instagram to enable automated target profile scraping. Your credentials are only used for this session and are never saved.
-                </p>
-
-                <div class="login-form-container" style="max-width: 400px; margin: 0 auto;">
-                    <div class="input-group" style="margin-bottom: 1rem;">
-                        <label for="insta-username">Instagram Username</label>
-                        <input type="text" id="insta-username" class="text-input input-field" placeholder="e.g. your_username">
+                <!-- Step 1: Landing screen choices -->
+                <div id="login-gate-landing">
+                    <h2 class="section-title" style="justify-content: center; margin-bottom: 0.5rem; font-size: 1.5rem;">
+                        <span class="section-icon">🔍</span> Welcome to InstaLens
+                    </h2>
+                    <p class="section-desc" style="text-align: center; max-width: 480px; margin: 0 auto 1.5rem;">
+                        Analyze Instagram targets locally. Connect your account to run automated scrapers or explore profiles offline using manual text and screenshot OCR.
+                    </p>
+                    
+                    <div class="gateway-split">
+                        <div class="gateway-card">
+                            <div style="margin-bottom: 1.2rem;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px;">
+                                    <span>🔐</span> Account Scraping
+                                </h3>
+                                <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                    Connect an Instagram account to scan target profiles automatically and run the interaction spy tool.
+                                </p>
+                            </div>
+                            <button class="btn-analyze" id="btn-show-login-form" style="margin-top: 0; padding: 0.75rem 1rem;">
+                                Log In with Instagram
+                            </button>
+                        </div>
+                        
+                        <div class="gateway-card">
+                            <div style="margin-bottom: 1.2rem;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--accent-purple); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px;">
+                                    <span>📝</span> Offline Analysis
+                                </h3>
+                                <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                    Skip login to manually analyze text captions, bios, or extract text from screenshots using local OCR.
+                                </p>
+                            </div>
+                            <button class="btn-analyze" id="btn-skip-login-direct" style="margin-top: 0; padding: 0.75rem 1rem; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                Continue without Login
+                            </button>
+                        </div>
                     </div>
-                    <div class="input-group" style="margin-bottom: 1.2rem;">
-                        <label for="insta-password">Instagram Password</label>
-                        <input type="password" id="insta-password" class="text-input input-field" placeholder="Your account password">
-                    </div>
+                </div>
 
-                    <button class="btn-analyze" id="btn-login" style="margin-top: 0;">
-                        <span class="btn-text">Log In & Continue</span>
-                        <span class="btn-loading" hidden>
-                            <div class="spinner"></div>
-                            <span>Connecting...</span>
-                        </span>
+                <!-- Step 2: Hidden Login credentials form -->
+                <div id="login-gate-form" hidden>
+                    <button id="btn-back-to-landing" style="background: transparent; border: none; color: var(--accent-cyan); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 1.2rem;">
+                        ← Back to Options
                     </button>
+                    <h2 class="section-title" style="justify-content: center; margin-bottom: 0.5rem; font-size: 1.3rem;">
+                        <span class="section-icon">🔑</span> Connect Instagram
+                    </h2>
+                    <p class="section-desc" style="text-align: center; max-width: 440px; margin: 0 auto 1.5rem;">
+                        Log in using your Instagram account. Credentials are used <strong>only locally</strong> to establish a scraper session and are never uploaded or saved.
+                    </p>
 
-                    <div style="text-align: center; margin-top: 1.2rem; font-size: 0.85rem;">
-                        <span style="color: var(--text-muted);">Don't want to log in?</span>
-                        <a href="#" id="link-skip-login" style="color: var(--accent-cyan); text-decoration: underline; margin-left: 4px; font-weight: 500;">Use Manual Mode</a>
+                    <div class="login-form-container" style="max-width: 400px; margin: 0 auto;">
+                        <div class="input-group" style="margin-bottom: 1rem;">
+                            <label for="insta-username">Instagram Username</label>
+                            <input type="text" id="insta-username" class="text-input input-field" placeholder="e.g. your_username">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 1.2rem;">
+                            <label for="insta-password">Instagram Password</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="insta-password" class="text-input input-field" placeholder="Your account password">
+                                <button type="button" class="password-toggle-btn" id="btn-toggle-password" aria-label="Toggle password visibility">👁️</button>
+                            </div>
+                        </div>
+
+                        <button class="btn-analyze" id="btn-login" style="margin-top: 0;">
+                            <span class="btn-text">Connect & Continue</span>
+                            <span class="btn-loading" hidden>
+                                <div class="spinner"></div>
+                                <span>Establishing session...</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -84,7 +128,11 @@
                         <span class="session-dot" style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green);"></span>
                         <span id="session-user-text" style="font-weight: 600; color: var(--text-primary);">Logged in as @username</span>
                     </div>
-                    <button id="btn-logout" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-sm); color: var(--accent-red); padding: 4px 10px; font-family: var(--font); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Log Out</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="btn-download-cli" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--radius-sm); color: var(--accent-cyan); padding: 4px 10px; font-family: var(--font); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;">💻 Download CLI Tool</button>
+                        <button id="btn-taxonomy-settings" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); padding: 4px 10px; font-family: var(--font); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;">⚙️ Settings</button>
+                        <button id="btn-logout" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-sm); color: var(--accent-red); padding: 4px 10px; font-family: var(--font); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Log Out</button>
+                    </div>
                 </div>
 
                 <section class="input-section glass-card" id="input-section">
@@ -98,243 +146,687 @@
                             </svg>
                             Auto Scrape
                         </button>
+                        <button class="mode-tab" data-mode="spy" id="tab-spy">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Activity Spy
+                        </button>
                         <button class="mode-tab" data-mode="manual" id="tab-manual">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                             </svg>
-                            Manual Input
+                            Manual Input & OCR
+                        </button>
+                        <button class="mode-tab" data-mode="match" id="tab-match">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+                            </svg>
+                            Matchmaker
                         </button>
                     </div>
 
                     <!-- AUTO MODE -->
                     <div class="mode-panel active" id="panel-auto">
-                        <h2 class="section-title">
-                            <span class="section-icon">🔗</span>
-                            Target Profile
-                        </h2>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 6px;">
+                            <span>🔗</span> Target Profile Analyzer
+                        </h3>
                         <p class="section-desc">
-                            Enter the Instagram profile URL or username you want to analyze.
+                            Audits any public Instagram profile to extract posts, captions, reels, schedule heatmaps, and interest topics.
                         </p>
-                        <input 
-                            type="text" 
-                            id="target-profile" 
-                            class="text-input input-field"
-                            placeholder="e.g. https://instagram.com/username or @username"
-                        >
-
-                        <div class="options-row" style="margin-top: 1.2rem;">
-                            <div class="input-group small" style="min-width: 160px;">
-                                <label for="content-source">Content Source</label>
-                                <select id="content-source" class="text-input input-field" style="padding: 0.8rem 1rem; width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-sm); outline: none; cursor: pointer;">
-                                    <option value="posts" style="background: var(--bg-secondary); color: var(--text-primary);">Posts & Reels</option>
-                                    <option value="reposts" style="background: var(--bg-secondary); color: var(--text-primary);">Reposts</option>
-                                </select>
-                            </div>
-                            <div class="input-group small">
-                                <label for="max-posts">Max Posts to Scan</label>
-                                <input type="number" id="max-posts" class="text-input input-field" value="30" min="5" max="100">
-                            </div>
-                            <p class="text-muted" style="margin-top: 1.2rem;">More posts = better accuracy but slower.</p>
+                        
+                        <div class="input-group" style="margin-bottom: 1rem;">
+                            <label for="target-profile">Target Username or Profile URL</label>
+                            <input 
+                                type="text" 
+                                id="target-profile" 
+                                class="text-input input-field"
+                                placeholder="e.g. @username or https://instagram.com/username"
+                            >
                         </div>
 
-                        <div class="warning-banner">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <!-- Collapsible Advanced Settings -->
+                        <div class="collapsible-settings" id="settings-auto-wrapper">
+                            <div class="collapsible-header" id="header-settings-auto">
+                                <span>⚙️ Advanced Settings</span>
+                                <span class="collapsible-arrow">▼</span>
+                            </div>
+                            <div class="collapsible-content" id="content-settings-auto">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div class="input-group">
+                                        <label for="content-source">Scraping Source</label>
+                                        <select id="content-source" class="text-input input-field" style="padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.3);">
+                                            <option value="posts">Posts & Reels</option>
+                                            <option value="reposts">Reposts</option>
+                                            <option value="following">Following Circle</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="max-posts">Scan Depth (Post count)</label>
+                                        <input type="number" id="max-posts" class="text-input input-field" value="30" min="5" max="100" style="padding: 0.6rem 0.8rem;">
+                                    </div>
+                                </div>
+                                <p class="text-muted" style="margin-top: 0.6rem; font-size: 0.75rem;">Scanning more posts increases data classification confidence, but takes longer.</p>
+                            </div>
+                        </div>
+
+                        <div class="warning-banner" style="margin-top: 1rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                                 <line x1="12" y1="9" x2="12" y2="13"/>
                                 <line x1="12" y1="17" x2="12.01" y2="17"/>
                             </svg>
-                            <span>Automated scraping may risk account restrictions. Use at your own discretion.</span>
+                            <span>Playwright operates locally. Automated scraping may trigger platform rate limits.</span>
                         </div>
+
+                        <button class="btn-analyze" id="btn-run-auto" style="margin-top: 1.2rem;">
+                            <span class="btn-text">🚀 Run Auto Scraping</span>
+                            <span class="btn-loading" hidden>
+                                <div class="spinner"></div>
+                                <span id="loading-text-auto">Launching browser...</span>
+                            </span>
+                        </button>
                     </div>
 
-                    <!-- MANUAL MODE -->
-                    <div class="mode-panel" id="panel-manual">
-                        <h2 class="section-title">
-                            <span class="section-icon">📝</span>
-                            Paste Captions & Text
-                        </h2>
+                    <!-- ACTIVITY SPY MODE -->
+                    <div class="mode-panel" id="panel-spy">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--accent-purple); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 6px;">
+                            <span>🕵️‍♂️</span> Activity Spy (Interaction Signals Scanner)
+                        </h3>
                         <p class="section-desc">
-                            Copy captions, repost text, hashtags, or bio text from an Instagram profile.
-                            Separate multiple captions with a blank line.
+                            Audit the target's followed circle to locate recently left likes and comments. Constructs a <strong>Shadow Interest Profile</strong> based on consumed media.
                         </p>
+                        
+                        <div class="input-group" style="margin-bottom: 1rem;">
+                            <label for="spy-target-profile">Target Username or Profile URL</label>
+                            <input 
+                                type="text" 
+                                id="spy-target-profile" 
+                                class="text-input input-field" 
+                                placeholder="e.g. @username or https://instagram.com/username"
+                            >
+                        </div>
+
+                        <!-- Collapsible Advanced Settings -->
+                        <div class="collapsible-settings" id="settings-spy-wrapper">
+                            <div class="collapsible-header" id="header-settings-spy">
+                                <span>⚙️ Spy Calibration Settings</span>
+                                <span class="collapsible-arrow">▼</span>
+                            </div>
+                            <div class="collapsible-content" id="content-settings-spy">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div class="input-group">
+                                        <label for="spy-depth-friends">Accounts to Audit</label>
+                                        <input type="number" id="spy-depth-friends" class="text-input input-field" value="5" min="1" max="25" style="padding: 0.6rem 0.8rem;">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="spy-depth-posts">Recent Posts scanned per account</label>
+                                        <input type="number" id="spy-depth-posts" class="text-input input-field" value="5" min="1" max="15" style="padding: 0.6rem 0.8rem;">
+                                    </div>
+                                </div>
+                                <p class="text-muted" style="margin-top: 0.6rem; font-size: 0.75rem;">Higher scan limits increase the chance of intercepting actions but require more Playwright page loads.</p>
+                            </div>
+                        </div>
+
+                        <button class="btn-analyze" id="btn-run-spy" style="margin-top: 1.2rem; background: var(--gradient-warm); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.25);">
+                            <span class="btn-text">🕵️‍♂️ Initiate Scan Sequence</span>
+                            <span class="btn-loading" hidden>
+                                <div class="spinner"></div>
+                                <span id="loading-text-spy">Initializing...</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- MANUAL & OCR MODE -->
+                    <div class="mode-panel" id="panel-manual">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 6px;">
+                            <span>📝</span> Manual Text & OCR Screenshot Intake
+                        </h3>
+                        <p class="section-desc">
+                            Paste text captions directly or drop screenshots. Renders a topic profile offline with no credentials needed.
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label for="text-input" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">Text Editor</label>
+                            <button id="btn-clear-manual" class="btn-copy" style="border-color: rgba(239,68,68,0.2); color: var(--accent-red);">🗑️ Clear Inputs</button>
+                        </div>
                         <textarea 
                             id="text-input" 
                             class="text-input text-area" 
                             placeholder="Paste Instagram captions here...&#10;&#10;Example:&#10;Morning grind 💪 Never skip leg day! #gym #fitness #legday #gymlife&#10;&#10;Can't stop watching this movie 🎬 Absolute masterpiece! #bollywood #movie #mustwatch&#10;&#10;College life hits different when exams are near 😭 #college #exams #engineering"
-                            rows="8"
+                            rows="6"
+                            style="min-height: 120px;"
                         ></textarea>
 
                         <!-- Screenshot upload -->
                         <div class="upload-section">
-                            <h2 class="section-title">
-                                <span class="section-icon">🖼️</span>
-                                Upload Screenshots
+                            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 4px;">
+                                <span>🖼️</span> Drag-and-Drop Screenshots
                                 {% if not tesseract_available %}
-                                <span class="badge badge-warning">OCR Not Available</span>
+                                <span class="badge badge-warning" style="margin-left: 6px;">OCR Not Available</span>
                                 {% endif %}
-                            </h2>
-                            <p class="section-desc">
-                                Drag & drop Instagram screenshots, or click to browse.
+                            </h4>
+                            <p class="section-desc" style="margin-bottom: 0.8rem;">
+                                Upload screenshots of profile posts or captions. Local Tesseract OCR extracts text automatically.
                                 {% if not tesseract_available %}
                                 <br><span class="text-warning">⚠️ Tesseract OCR not installed. Run: <code>sudo apt install tesseract-ocr</code></span>
                                 {% endif %}
                             </p>
                             <div class="drop-zone" id="drop-zone" {% if not tesseract_available %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                                 <div class="drop-zone-content">
-                                    <svg class="drop-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <svg class="drop-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                         <polyline points="17 8 12 3 7 8"/>
                                         <line x1="12" y1="3" x2="12" y2="15"/>
                                     </svg>
-                                    <p>Drop screenshots here or <span class="browse-link">browse files</span></p>
-                                    <p class="drop-hint">PNG, JPG, WebP — max 16 MB</p>
+                                    <p>Drop images here or <span class="browse-link">browse files</span></p>
+                                    <p class="drop-hint" style="font-size: 0.7rem;">PNG, JPG, WebP — max 16 MB</p>
                                 </div>
                                 <input type="file" id="file-input" multiple accept="image/*" hidden>
                             </div>
                             <div class="file-previews" id="file-previews"></div>
+                            
+                            <!-- OCR Preview panel to review before final analysis -->
+                            <div id="ocr-preview-panel" class="glass-card" style="margin-top: 1rem; padding: 0.8rem 1rem; border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.02);" hidden>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 4px;">
+                                        <span class="spinner small" id="ocr-spinner" hidden></span>
+                                        <span>📝 OCR Extracted Text Buffer</span>
+                                    </span>
+                                    <div style="display: flex; gap: 6px;">
+                                        <button id="btn-ocr-append" class="btn-copy">Append to Editor</button>
+                                        <button id="btn-ocr-replace" class="btn-copy">Replace Editor Text</button>
+                                    </div>
+                                </div>
+                                <div id="ocr-extracted-preview" style="font-size: 0.8rem; color: var(--text-secondary); max-height: 100px; overflow-y: auto; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+                                    Waiting for OCR extraction...
+                                </div>
+                            </div>
                         </div>
+
+                        <button class="btn-analyze" id="btn-run-manual" style="margin-top: 1.2rem;">
+                            <span class="btn-text">🚀 Run Offline Analysis</span>
+                            <span class="btn-loading" hidden>
+                                <div class="spinner"></div>
+                                <span id="loading-text-manual">Running NLP Engine...</span>
+                            </span>
+                        </button>
                     </div>
 
-                    <!-- Analyze button -->
-                    <button class="btn-analyze" id="btn-analyze">
-                        <span class="btn-text">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                            </svg>
-                            Analyze Profile
-                        </span>
-                        <span class="btn-loading" hidden>
-                            <div class="spinner"></div>
-                            <span id="loading-text">Analyzing...</span>
-                        </span>
-                    </button>
+                    <!-- MATCHMAKER MODE -->
+                    <div class="mode-panel" id="panel-match">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--accent-pink); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 6px;">
+                            <span>💖</span> Dating & Partner Compatibility Matchmaker
+                        </h3>
+                        <p class="section-desc">
+                            Compare two targets (scraped profiles or pasted text blocks) to calculate core interest overlaps, communication vibe alignment, and generate custom icebreakers.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                            <!-- Profile A Input -->
+                            <div class="glass-card" style="padding: 1rem; border-color: rgba(236,72,153,0.15);">
+                                <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-pink); margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Profile A (e.g. You)</span>
+                                    <select id="match-a-source" class="input-field" style="width: auto; padding: 2px 6px; font-size: 0.75rem; height: 26px; border-radius: 4px;">
+                                        <option value="text">Paste Text</option>
+                                        <option value="scrape">Scrape Username</option>
+                                    </select>
+                                </h4>
+                                
+                                <div id="match-a-scrape-group" hidden>
+                                    <div class="input-group">
+                                        <label for="match-a-target">Instagram Username / URL</label>
+                                        <input type="text" id="match-a-target" class="text-input input-field" placeholder="e.g. @your_username">
+                                    </div>
+                                </div>
+                                <div id="match-a-text-group">
+                                    <textarea id="match-a-text" class="text-input text-area" placeholder="Paste your captions/messages..." rows="5" style="min-height: 100px; font-size: 0.8rem;"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Profile B Input -->
+                            <div class="glass-card" style="padding: 1rem; border-color: rgba(168,85,247,0.15);">
+                                <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-purple); margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Profile B (e.g. Her)</span>
+                                    <select id="match-b-source" class="input-field" style="width: auto; padding: 2px 6px; font-size: 0.75rem; height: 26px; border-radius: 4px;">
+                                        <option value="scrape">Scrape Username</option>
+                                        <option value="text">Paste Text</option>
+                                    </select>
+                                </h4>
+                                
+                                <div id="match-b-scrape-group">
+                                    <div class="input-group">
+                                        <label for="match-b-target">Instagram Username / URL</label>
+                                        <input type="text" id="match-b-target" class="text-input input-field" placeholder="e.g. @her_username">
+                                    </div>
+                                </div>
+                                <div id="match-b-text-group" hidden>
+                                    <textarea id="match-b-text" class="text-input text-area" placeholder="Paste her captions/messages..." rows="5" style="min-height: 100px; font-size: 0.8rem;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Matchmaker Settings -->
+                        <div class="collapsible-settings" id="settings-match-wrapper" style="margin-top: 1rem;">
+                            <div class="collapsible-header" id="header-settings-match">
+                                <span>⚙️ Scraper Options</span>
+                                <span class="collapsible-arrow">▼</span>
+                            </div>
+                            <div class="collapsible-content" id="content-settings-match">
+                                <div class="input-group">
+                                    <label for="match-max-posts">Max Scraped Posts per Profile (Speed vs Depth)</label>
+                                    <select id="match-max-posts" class="input-field">
+                                        <option value="5">5 posts (Fastest)</option>
+                                        <option value="15" selected>15 posts (Recommended)</option>
+                                        <option value="30">30 posts (Deep audit)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-analyze" id="btn-run-match" style="margin-top: 1.2rem; background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple)); border-color: rgba(236, 72, 153, 0.4);">
+                            <span class="btn-text">💖 Calculate Compatibility</span>
+                            <span class="btn-loading" hidden>
+                                <div class="spinner"></div>
+                                <span id="loading-text-match">Matchmaking...</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- SSE Progress Logs (Shared scraper panel) -->
+                    <div id="scrape-progress-card" class="glass-card animate-in" style="margin-top: 1.2rem; padding: 1rem; border-color: rgba(6, 182, 212, 0.35); background: rgba(6, 182, 212, 0.02);" hidden>
+                        <div class="log-panel-header" id="btn-toggle-logs">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="spinner small"></div>
+                                <h4 id="progress-card-title" style="margin: 0; color: var(--accent-cyan); font-size: 0.9rem;">Scraping target profile...</h4>
+                            </div>
+                            <span id="log-toggle-arrow" style="font-size: 0.7rem; color: var(--text-secondary);">▼ Collapse Logs</span>
+                        </div>
+                        <div id="scrape-progress-logs" style="font-family: monospace; font-size: 0.78rem; color: var(--text-secondary); max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <!-- dynamic status entries -->
+                        </div>
+                    </div>
                 </section>
             </div>
 
             <!-- Results Section -->
             <section class="results-section" id="results-section" hidden>
-                <!-- Profile Info Card (for auto mode) -->
-                <div class="profile-card glass-card animate-in" id="profile-card" hidden>
-                    <div class="profile-header">
-                        <div class="profile-avatar" id="profile-avatar">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
+                
+                <!-- Section 1: Profile Overview -->
+                <div class="dashboard-section" id="section-profile-overview">
+                    <h3 class="dashboard-section-title">
+                        <span>👤</span> Profile Overview
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem; flex-wrap: wrap;">
+                        <!-- Profile Info Card -->
+                        <div class="profile-card glass-card animate-in" id="profile-card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div class="profile-header" style="margin-bottom: 0.8rem;">
+                                <div class="profile-avatar" id="profile-avatar">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                </div>
+                                <div class="profile-details">
+                                    <h3 class="profile-name" id="profile-name" style="font-size: 1.15rem; font-weight: 700;"></h3>
+                                    <p class="profile-bio" id="profile-bio" style="font-size: 0.8rem; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px;"></p>
+                                </div>
+                            </div>
+                            <div class="profile-stats" style="margin-top: auto; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-posts" style="font-size: 1.1rem;">-</span>
+                                    <span class="profile-stat-label">Posts</span>
+                                </div>
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-followers" style="font-size: 1.1rem;">-</span>
+                                    <span class="profile-stat-label">Followers</span>
+                                </div>
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-following" style="font-size: 1.1rem;">-</span>
+                                    <span class="profile-stat-label">Following</span>
+                                </div>
+                                <div class="profile-stat">
+                                    <span class="profile-stat-value" id="profile-scraped" style="font-size: 1.1rem;">-</span>
+                                    <span class="profile-stat-label">Scraped</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="profile-details">
-                            <h3 class="profile-name" id="profile-name"></h3>
-                            <p class="profile-bio" id="profile-bio"></p>
+
+                        <!-- Summary Card -->
+                        <div class="summary-card glass-card animate-in" id="summary-card" style="margin-bottom: 0; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
+                            <p class="summary-text" id="summary-text" style="font-size: 0.88rem; line-height: 1.5; margin: 0;"></p>
+                            <div class="confidence-badge" id="overall-confidence" style="margin-top: 0.8rem; padding: 0.4rem 1.2rem;">
+                                <span class="confidence-label">Overall Confidence</span>
+                                <span class="confidence-value" id="confidence-value" style="font-size: 1.25rem;"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="profile-stats">
-                        <div class="profile-stat">
-                            <span class="profile-stat-value" id="profile-posts">-</span>
-                            <span class="profile-stat-label">Posts</span>
+
+                    <!-- Input / OCR Stats Bar -->
+                    <div class="stats-bar glass-card animate-in" id="stats-bar" style="margin-top: 1rem; margin-bottom: 0; padding: 0.8rem 1rem;">
+                        <div class="stat">
+                            <span class="stat-value" id="stat-chunks-val" style="font-size: 1.1rem;">0</span>
+                            <span class="stat-label" style="font-size: 0.65rem;">Text Chunks</span>
                         </div>
-                        <div class="profile-stat">
-                            <span class="profile-stat-value" id="profile-followers">-</span>
-                            <span class="profile-stat-label">Followers</span>
+                        <div class="stat">
+                            <span class="stat-value" id="stat-screenshots-val" style="font-size: 1.1rem;">0</span>
+                            <span class="stat-label" style="font-size: 0.65rem;">Screenshots</span>
                         </div>
-                        <div class="profile-stat">
-                            <span class="profile-stat-value" id="profile-following">-</span>
-                            <span class="profile-stat-label">Following</span>
+                        <div class="stat">
+                            <span class="stat-value" id="stat-tokens-val" style="font-size: 1.1rem;">0</span>
+                            <span class="stat-label" style="font-size: 0.65rem;">Tokens</span>
                         </div>
-                        <div class="profile-stat">
-                            <span class="profile-stat-value" id="profile-scraped">-</span>
-                            <span class="profile-stat-label">Scraped</span>
+                        <div class="stat">
+                            <span class="stat-value" id="stat-hashtags-val" style="font-size: 1.1rem;">0</span>
+                            <span class="stat-label" style="font-size: 0.65rem;">Hashtags</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Summary Card -->
-                <div class="summary-card glass-card animate-in" id="summary-card">
-                    <div class="summary-icon">🎯</div>
-                    <p class="summary-text" id="summary-text"></p>
-                    <div class="confidence-badge" id="overall-confidence">
-                        <span class="confidence-label">Overall Confidence</span>
-                        <span class="confidence-value" id="confidence-value"></span>
+                <!-- Section 2: Engagement Metrics -->
+                <div class="dashboard-section" id="section-engagement-metrics">
+                    <h3 class="dashboard-section-title">
+                        <span>📈</span> Engagement Metrics
+                    </h3>
+                    
+                    <div class="glass-card animate-in" id="engagement-analytics-card" style="padding: 1.2rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+                            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Engagement Rate</span>
+                                <span id="metric-er" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.15rem; word-break: break-all;">0%</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Likes</span>
+                                <span id="metric-likes" style="font-weight: 600; color: var(--text-primary); font-size: 1.15rem; word-break: break-all;">0</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Comments</span>
+                                <span id="metric-comments" style="font-weight: 600; color: var(--text-primary); font-size: 1.15rem; word-break: break-all;">0</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Avg Likes</span>
+                                <span id="metric-avg-likes" style="font-weight: 600; color: var(--text-primary); font-size: 1.15rem; word-break: break-all;">0</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Avg Comments</span>
+                                <span id="metric-avg-comments" style="font-weight: 600; color: var(--text-primary); font-size: 1.15rem; word-break: break-all;">0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Stats Bar -->
-                <div class="stats-bar glass-card animate-in" id="stats-bar">
-                    <div class="stat">
-                        <span class="stat-value" id="stat-chunks-val">0</span>
-                        <span class="stat-label">Text Chunks</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value" id="stat-screenshots-val">0</span>
-                        <span class="stat-label">Screenshots</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value" id="stat-tokens-val">0</span>
-                        <span class="stat-label">Tokens Analyzed</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value" id="stat-hashtags-val">0</span>
-                        <span class="stat-label">Hashtags Found</span>
+                <!-- Section 3: Content Behavior -->
+                <div class="dashboard-section" id="section-content-behavior">
+                    <h3 class="dashboard-section-title">
+                        <span>🎥</span> Content Behavior & Schedule
+                    </h3>
+                    
+                    <div class="glass-card animate-in" id="content-behavior-card" style="padding: 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Content Formats -->
+                        <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+                            <h4 style="margin: 0 0 4px 0; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Format Distribution</h4>
+                            <div class="topic-item" style="margin: 0;">
+                                <div class="topic-header" style="font-size: 0.75rem; margin-bottom: 2px;">
+                                    <span style="color: var(--text-secondary);">Reels</span>
+                                    <span id="ratio-reels" style="color: var(--accent-cyan); font-weight: 600;">0%</span>
+                                </div>
+                                <div class="topic-bar" style="height: 6px;"><div id="bar-reels" class="topic-bar-fill" style="background: var(--gradient-main);"></div></div>
+                            </div>
+                            <div class="topic-item" style="margin: 0;">
+                                <div class="topic-header" style="font-size: 0.75rem; margin-bottom: 2px;">
+                                    <span style="color: var(--text-secondary);">Carousels</span>
+                                    <span id="ratio-carousels" style="color: var(--accent-cyan); font-weight: 600;">0%</span>
+                                </div>
+                                <div class="topic-bar" style="height: 6px;"><div id="bar-carousels" class="topic-bar-fill" style="background: var(--gradient-main);"></div></div>
+                            </div>
+                            <div class="topic-item" style="margin: 0;">
+                                <div class="topic-header" style="font-size: 0.75rem; margin-bottom: 2px;">
+                                    <span style="color: var(--text-secondary);">Images</span>
+                                    <span id="ratio-images" style="color: var(--accent-cyan); font-weight: 600;">0%</span>
+                                </div>
+                                <div class="topic-bar" style="height: 6px;"><div id="bar-images" class="topic-bar-fill" style="background: var(--gradient-main);"></div></div>
+                            </div>
+                        </div>
+
+                        <!-- Weekday Activity -->
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <h4 style="margin: 0 0 4px 0; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Post Frequency (by day)</h4>
+                            <div id="activity-heatmap" style="display: flex; align-items: flex-end; justify-content: space-between; height: 90px; padding-top: 10px;">
+                                <!-- Weekday bar graphs dynamically rendered -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Topics Grid -->
-                <div class="results-grid">
-                    <!-- Top Topics -->
-                    <div class="result-card glass-card animate-in" id="topics-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">🏷️</span>
-                            Top Topics
-                        </h3>
-                        <div class="topics-list" id="topics-list"></div>
-                    </div>
+                <!-- Section 4: Interest Profiler -->
+                <div class="dashboard-section" id="section-interest-profiler">
+                    <h3 class="dashboard-section-title">
+                        <span>🧠</span> Interest & Topic Profiler
+                    </h3>
+                    
+                    <div class="results-grid">
+                        <!-- Vibe & Style Card -->
+                        <div class="result-card glass-card animate-in" id="vibe-card">
+                            <h3 class="card-title">
+                                <span class="card-icon">⚡</span>
+                                Profile Vibe & Tone
+                            </h3>
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 0.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span id="vibe-title" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.05rem;">-</span>
+                                    <span id="vibe-score" class="badge" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.2);">0% Match</span>
+                                </div>
+                                <p id="vibe-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; line-height: 1.4;"></p>
+                                <div id="vibe-breakdown" style="display: flex; flex-direction: column; gap: 6px; margin-top: 0.4rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                                    <!-- Progress bars for other vibes -->
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Common Interests -->
-                    <div class="result-card glass-card animate-in" id="interests-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">💡</span>
-                            Common Interests
-                        </h3>
-                        <div class="interests-list" id="interests-list"></div>
-                    </div>
+                        <!-- Top Topics -->
+                        <div class="result-card glass-card animate-in" id="topics-card">
+                            <h3 class="card-title">
+                                <span class="card-icon">🏷️</span>
+                                Categorized Topics
+                            </h3>
+                            <div class="topics-list" id="topics-list"></div>
+                        </div>
 
-                    <!-- Keywords -->
-                    <div class="result-card glass-card animate-in" id="keywords-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">🔑</span>
-                            Top Keywords
-                        </h3>
-                        <div class="keywords-cloud" id="keywords-cloud"></div>
-                    </div>
+                        <!-- Common Interests -->
+                        <div class="result-card glass-card animate-in" id="interests-card">
+                            <h3 class="card-title">
+                                <span class="card-icon">💡</span>
+                                Extracted Interest Tags
+                            </h3>
+                            <div class="interests-list" id="interests-list"></div>
+                        </div>
 
-                    <!-- Hashtags -->
-                    <div class="result-card glass-card animate-in" id="hashtags-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">#️⃣</span>
-                            Trending Hashtags
-                        </h3>
-                        <div class="hashtags-list" id="hashtags-list"></div>
-                    </div>
+                        <!-- Keywords -->
+                        <div class="result-card glass-card animate-in" id="keywords-card">
+                            <h3 class="card-title">
+                                <span class="card-icon">🔑</span>
+                                Salient Keywords
+                            </h3>
+                            <div class="keywords-cloud" id="keywords-cloud"></div>
+                        </div>
 
-                    <!-- Conversation Suggestions -->
-                    <div class="result-card glass-card full-width animate-in" id="suggestions-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">💬</span>
-                            Conversation Starters
-                        </h3>
-                        <div class="suggestions-list" id="suggestions-list"></div>
+                        <!-- Hashtags -->
+                        <div class="result-card glass-card animate-in" id="hashtags-card">
+                            <h3 class="card-title">
+                                <span class="card-icon">#️⃣</span>
+                                Used Hashtags
+                            </h3>
+                            <div class="hashtags-list" id="hashtags-list"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- New Analysis Button -->
-                <button class="btn-new-analysis" id="btn-new-analysis">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="1 4 1 10 7 10"/>
-                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-                    </svg>
-                    New Analysis
-                </button>
+                <!-- Section 5: Conversation Starters -->
+                <div class="dashboard-section" id="section-conversation-starters">
+                    <h3 class="dashboard-section-title">
+                        <span>💬</span> Conversation Suggestions
+                    </h3>
+                    
+                    <div class="result-card glass-card full-width animate-in" id="suggestions-card" style="padding: 1.2rem;">
+                        <div class="suggestions-list" id="suggestions-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Activity Spy Timeline (Only visible in Spy Mode) -->
+                <div class="dashboard-section" id="section-spy-timeline" style="display: none;">
+                    <h3 class="dashboard-section-title">
+                        <span>🕵️‍♂️</span> Activity Spy (Intercepted Engagements)
+                    </h3>
+                    
+                    <div class="result-card glass-card full-width animate-in" id="spy-interceptions-card" style="padding: 1.2rem;">
+                        <div id="spy-kpi-banner" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.2rem; background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Accounts Audited</span>
+                                <span id="spy-stat-friends" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.1rem;">0</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Posts Scanned</span>
+                                <span id="spy-stat-posts" style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">0</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Likes Caught</span>
+                                <span id="spy-stat-likes" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.1rem;">0</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Comments Caught</span>
+                                <span id="spy-stat-comments" style="font-weight: 700; color: var(--accent-cyan); font-size: 1.1rem;">0</span>
+                            </div>
+                        </div>
+                        <div id="spy-interceptions-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Interceptions dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MATCHMAKER RESULTS DASHBOARD -->
+                <div class="dashboard-section" id="section-matchmaker-results" style="display: none;">
+                    <h3 class="dashboard-section-title">
+                        <span>💖</span> Compatibility Report
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; flex-wrap: wrap;">
+                        <!-- Compatibility Score Gauge -->
+                        <div class="glass-card animate-in" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-color: rgba(236,72,153,0.3); text-align: center; background: radial-gradient(circle at top, rgba(236,72,153,0.06), transparent);">
+                            <div class="profile-avatar" style="width: 70px; height: 70px; background: rgba(236, 72, 153, 0.15); border: 2px solid var(--accent-pink); box-shadow: 0 0 20px rgba(236,72,153,0.3); margin-bottom: 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 2.2rem; line-height: 1;">💖</span>
+                            </div>
+                            
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Compatibility Score</span>
+                            <div id="match-score-value" style="font-size: 3.2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 10px rgba(236,72,153,0.25)); margin: 0.2rem 0;">0%</div>
+                            
+                            <span id="match-tier-badge" class="badge" style="background: var(--accent-pink); color: white; font-weight: 700; font-size: 0.8rem; padding: 4px 12px; border-radius: 12px; margin-bottom: 0.8rem;">Tier</span>
+                            <p id="match-tier-desc" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; max-width: 260px; margin: 0;"></p>
+                        </div>
+
+                        <!-- Match Details & Overlaps -->
+                        <div class="glass-card animate-in" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 6px; margin-top: 0;">
+                                    <span>📊</span> Similarity Breakdown
+                                </h4>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                                    <!-- Topics Overlap -->
+                                    <div class="topic-item">
+                                        <div class="topic-header" style="margin-bottom: 3px;">
+                                            <span class="topic-name" style="font-size: 0.8rem;">Core Interests Match</span>
+                                            <span id="match-breakdown-topics" style="font-size: 0.8rem; color: var(--accent-pink); font-weight: 700;">0%</span>
+                                        </div>
+                                        <div class="topic-bar" style="height: 6px;"><div id="match-bar-topics" class="topic-bar-fill" style="width: 0%; background: var(--accent-pink);"></div></div>
+                                    </div>
+                                    
+                                    <!-- Vibes Overlap -->
+                                    <div class="topic-item">
+                                        <div class="topic-header" style="margin-bottom: 3px;">
+                                            <span class="topic-name" style="font-size: 0.8rem;">Communication Vibe Match</span>
+                                            <span id="match-breakdown-vibes" style="font-size: 0.8rem; color: var(--accent-purple); font-weight: 700;">0%</span>
+                                        </div>
+                                        <div class="topic-bar" style="height: 6px;"><div id="match-bar-vibes" class="topic-bar-fill" style="width: 0%; background: var(--accent-purple);"></div></div>
+                                    </div>
+                                    
+                                    <!-- Keywords Overlap -->
+                                    <div class="topic-item">
+                                        <div class="topic-header" style="margin-bottom: 3px;">
+                                            <span class="topic-name" style="font-size: 0.8rem;">Slang & Terminology Overlap</span>
+                                            <span id="match-breakdown-keywords" style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 700;">0%</span>
+                                        </div>
+                                        <div class="topic-bar" style="height: 6px;"><div id="match-bar-keywords" class="topic-bar-fill" style="width: 0%; background: var(--accent-cyan);"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <h4 style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; margin-top: 0;">Narrative Dynamics</h4>
+                                <p id="match-narrative" style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45; margin: 0;"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interest Venn-Chips -->
+                    <div class="glass-card animate-in" style="margin-top: 1.2rem; padding: 1.2rem;">
+                        <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.8rem; margin-top: 0;">🎯 Overlapping & Unique Interests</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <div>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: var(--accent-pink); text-transform: uppercase; display: block; margin-bottom: 4px;">Shared Core Connections</span>
+                                <div id="match-shared-interests" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    <!-- dynamic tags -->
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 8px;">
+                                <div>
+                                    <span id="match-label-unique-a" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">Unique to Profile A</span>
+                                    <div id="match-unique-a" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        <!-- dynamic tags -->
+                                    </div>
+                                </div>
+                                <div>
+                                    <span id="match-label-unique-b" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px;">Unique to Profile B</span>
+                                    <div id="match-unique-b" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        <!-- dynamic tags -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Matched Icebreakers -->
+                    <div class="glass-card animate-in" style="margin-top: 1.2rem; padding: 1.2rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-pink); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 6px; margin-top: 0;">
+                            <span>💬</span> Tailored Match Icebreakers
+                        </h4>
+                        <div id="match-icebreakers-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <!-- dynamic list with copy buttons -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exporters and Reset Actions -->
+                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn-new-analysis" id="btn-export-report" style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; border: none; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2); font-weight: 600;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export Report (.md)
+                    </button>
+                    <button class="btn-new-analysis" id="btn-new-analysis">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"/>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                        </svg>
+                        New Analysis
+                    </button>
+                </div>
             </section>
         </main>
 
@@ -342,6 +834,27 @@
         <footer class="footer">
             <p>Built with Python, Flask & NLP • No data is stored or shared</p>
         </footer>
+    </div>
+
+    <!-- Taxonomy Settings Modal -->
+    <div id="taxonomy-modal" class="modal-overlay" hidden>
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>⚙️ Interest Taxonomy Editor</h3>
+                <button id="btn-close-taxonomy" class="modal-close">&times;</button>
+            </div>
+            <p class="modal-desc">Customize the keywords and hashtags that signal interest categories. Separate values with commas.</p>
+            <div id="taxonomy-list-container">
+                <!-- dynamically loaded list -->
+            </div>
+            <div class="modal-actions">
+                <button id="btn-add-taxonomy-category" class="btn-secondary">+ Add Category</button>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-reset-taxonomy" class="btn-secondary" style="border-color: rgba(239, 68, 68, 0.2); color: var(--accent-red);">Reset Default</button>
+                    <button id="btn-save-taxonomy" class="btn-analyze" style="margin: 0; padding: 0.5rem 1.2rem;">Save Changes</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

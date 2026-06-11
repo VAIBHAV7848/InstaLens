@@ -8,13 +8,15 @@ Supports both automatic profile scraping and manual text input.
 import os
 import tempfile
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context
 
 from analyzer.preprocessor import preprocess_multiple
 from analyzer.ocr_engine import extract_text_from_multiple, is_tesseract_available
 from analyzer.topic_analyzer import analyze
 from analyzer.report_generator import generate_report
-from analyzer.scraper import scrape_profile, extract_username_from_url, create_loader
+from analyzer.scraper import scrape_profile, extract_username_from_url, create_loader, spy_target_activity
+from analyzer.taxonomy_manager import load_taxonomy, save_taxonomy
+from analyzer.matchmaker import calculate_compatibility
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max upload
@@ -28,14 +30,14 @@ def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def run_analysis(all_texts: list[str], ocr_count: int = 0, profile_info: dict = None) -> dict:
+def run_analysis(all_texts: list[str], profile_info=None, source="posts", ocr_count=0):
     """
-    Run the full NLP analysis pipeline on collected texts.
+    Run the analysis pipeline on the input texts.
 
     Args:
-        all_texts: All text chunks to analyze
-        ocr_count: Number of texts from OCR
-        profile_info: Optional profile metadata from scraper
+        all_texts: List of clean caption or text strings
+        profile_info: Dict containing Instagram profile metadata
+        source: Content source type (posts/reposts/following)
 
     Returns:
         JSON-serializable report dict
@@ -49,7 +51,7 @@ def run_analysis(all_texts: list[str], ocr_count: int = 0, profile_info: dict = 
         entities=preprocessed["all_entities"],
     )
 
-    report = generate_report(analysis)
+    report = generate_report(analysis, source=source, profile_info=profile_info)
 
     report["input_stats"] = {
         "text_chunks": len(all_texts),
@@ -145,18 +147,26 @@ def analyze_profile():
                 target_username = extract_username_from_url(target)
 
                 # Scrape profile using session cache (no password needed)
-                profile_data = scrape_profile(
+                profile_generator = scrape_profile(
                     target_username=target_username,
                     login_username=login_user,
                     login_password=None,
                     max_posts=max_posts,
                     source=source,
                 )
+                
+                profile_data = None
+                for item in profile_generator:
+                    if isinstance(item, dict):
+                        profile_data = item
+                        
+                if not profile_data:
+                    return jsonify({"error": "No profile data scraped."}), 500
 
                 all_texts = profile_data["captions"]
 
                 # Run analysis
-                report = run_analysis(all_texts, profile_info=profile_data)
+                report = run_analysis(all_texts, profile_info=profile_data, source=source)
                 return jsonify(report)
 
         # --- MANUAL MODE (form data) ---
@@ -206,6 +216,374 @@ def analyze_profile():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/ocr_extract", methods=["POST"])
+def ocr_extract():
+    """Extract text from uploaded screenshots using Tesseract OCR, returning the raw text string."""
+    try:
+        if "screenshots" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+        
+        files = request.files.getlist("screenshots")
+        temp_paths = []
+        for f in files:
+            if f and f.filename and allowed_file(f.filename):
+                ext = f.filename.rsplit(".", 1)[1].lower()
+                tmp = tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False)
+                f.save(tmp.name)
+                temp_paths.append(tmp.name)
+        
+        if not temp_paths:
+            return jsonify({"error": "No valid image files provided"}), 400
+        
+        ocr_texts = extract_text_from_multiple(temp_paths)
+        
+        # clean up temp files
+        for path in temp_paths:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+                
+        combined_text = "\n\n".join(ocr_texts)
+        return jsonify({"success": True, "text": combined_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/analyze_stream", methods=["POST"])
+def analyze_stream():
+    """Analyze a profile using a Server-Sent Events stream for live progress updates."""
+    target = request.form.get("target", "").strip()
+    login_user = request.form.get("login_username", "").strip()
+    login_pass = request.form.get("login_password", "").strip() or None
+    max_posts = int(request.form.get("max_posts", 30))
+    source = request.form.get("source", "posts")
+    
+    if not target:
+        return jsonify({"error": "Target is required."}), 400
+    if not login_user:
+        return jsonify({"error": "Login Username is required."}), 400
+
+    target_username = extract_username_from_url(target)
+
+    def generate():
+        try:
+            import json
+            yield f"data: {json.dumps({'status': 'Initializing scraper context...'})}\n\n"
+            
+            profile_data = None
+            profile_generator = scrape_profile(
+                target_username=target_username,
+                login_username=login_user,
+                login_password=login_pass,
+                max_posts=max_posts,
+                source=source,
+            )
+            
+            for item in profile_generator:
+                if isinstance(item, str):
+                    yield f"data: {json.dumps({'status': item})}\n\n"
+                elif isinstance(item, dict):
+                    profile_data = item
+
+            if not profile_data:
+                yield f"data: {json.dumps({'error': 'No profile data scraped.'})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'status': 'Running NLP Analysis & Topic Classification...'})}\n\n"
+            
+            # Run analysis pipeline
+            report = run_analysis(profile_data["captions"], profile_info=profile_data, source=source)
+            yield f"data: {json.dumps({'report': report})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
+
+
+@app.route("/spy_stream", methods=["POST"])
+def spy_stream():
+    """Spy on a target's engagements via SSE stream."""
+    target = request.form.get("target", "").strip()
+    login_user = request.form.get("login_username", "").strip()
+    login_pass = request.form.get("login_password", "").strip() or None
+    friends_count = int(request.form.get("friends_count", 5))
+    posts_count = int(request.form.get("posts_count", 5))
+    
+    if not target:
+        return jsonify({"error": "Target is required."}), 400
+    if not login_user:
+        return jsonify({"error": "Login Username is required."}), 400
+
+    target_username = extract_username_from_url(target)
+
+    def generate():
+        try:
+            import json
+            yield f"data: {json.dumps({'status': 'Initializing Activity Spy context...'})}\n\n"
+            
+            spy_data = None
+            spy_generator = spy_target_activity(
+                target_username=target_username,
+                login_username=login_user,
+                login_password=login_pass,
+                scan_depth_friends=friends_count,
+                scan_depth_posts=posts_count,
+            )
+            
+            for item in spy_generator:
+                if isinstance(item, str):
+                    yield f"data: {json.dumps({'status': item})}\n\n"
+                elif isinstance(item, dict):
+                    spy_data = item
+
+            if not spy_data:
+                yield f"data: {json.dumps({'error': 'No activity spy data scraped.'})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'status': 'Analyzing Shadow Interests & Interactions...'})}\n\n"
+            
+            texts = spy_data["all_texts"]
+            if not texts:
+                texts = [f"No direct interactions captured on recent posts of followed friends for @{target_username}."]
+                
+            report = run_analysis(texts, profile_info=None, source="posts")
+            
+            report["is_spy"] = True
+            report["spy_data"] = {
+                "friends_scanned": spy_data["friends_scanned"],
+                "posts_audited": spy_data["posts_audited"],
+                "likes_intercepted": spy_data["likes_intercepted"],
+                "comments_intercepted": spy_data["comments_intercepted"],
+                "likes": spy_data["likes"],
+                "comments": spy_data["comments"]
+            }
+            
+            yield f"data: {json.dumps({'report': report})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
+
+
+@app.route("/api/taxonomy", methods=["GET"])
+def get_taxonomy_api():
+    """Get the active interest taxonomy."""
+    return jsonify(load_taxonomy())
+
+
+@app.route("/api/taxonomy", methods=["POST"])
+def save_taxonomy_api():
+    """Save the edited taxonomy."""
+    new_taxonomy = request.json
+    if not isinstance(new_taxonomy, dict):
+        return jsonify({"error": "Invalid taxonomy format."}), 400
+    if save_taxonomy(new_taxonomy):
+        return jsonify({"success": True})
+    return jsonify({"error": "Failed to save taxonomy."}), 500
+
+
+@app.route("/api/export_cli_script", methods=["GET"])
+def export_cli_script():
+    """Generate a cookie-injected standalone Kali Linux CLI Python scraper script."""
+    username = session.get("instagram_user")
+    if not username:
+        return jsonify({"error": "Please log in first to export the authenticated CLI script."}), 401
+    
+    session_file = f"playwright_session_{username}.json"
+    import os
+    if not os.path.exists(session_file):
+        return jsonify({"error": "Session state file not found. Please log in again."}), 404
+        
+    with open(session_file, "r") as f:
+        session_data = f.read()
+
+    # Standalone CLI python script template
+    cli_template = f"""#!/usr/bin/env python3
+import sys
+import os
+import re
+import json
+import time
+
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:
+    print("[InstaLens CLI] Playwright not found! Installing requirements...")
+    os.system("pip3 install playwright")
+    os.system("playwright install chromium")
+    from playwright.sync_api import sync_playwright
+
+SESSION_STATE = {session_data}
+
+def run_scraper(target_username, max_posts=10):
+    print(f"[InstaLens CLI] Initializing scrape for @{{target_username}} (Authenticated as @{username})...")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+        )
+        context.add_cookies(SESSION_STATE.get("cookies", []))
+        
+        page = context.new_page()
+        print(f"[InstaLens CLI] Navigating to profile...")
+        page.goto(f"https://www.instagram.com/{{target_username}}/", timeout=60000)
+        time.sleep(5)
+        
+        if "Page Not Found" in page.title() or page.query_selector("text=isn't available"):
+            print(f"[Error] Profile @{{target_username}} is private or does not exist.")
+            browser.close()
+            return
+            
+        print("[InstaLens CLI] Scraping profile feed links...")
+        links = page.query_selector_all("a[href*='/p/'], a[href*='/reel/']")
+        post_urls = []
+        for l in links:
+            href = l.get_attribute("href")
+            if href and ("/p/" in href or "/reel/" in href):
+                full_url = f"https://www.instagram.com{{href}}"
+                if full_url not in post_urls:
+                    post_urls.append(full_url)
+                    
+        total = min(len(post_urls), max_posts)
+        print(f"[InstaLens CLI] Found {{len(post_urls)}} posts. Scraping top {{total}} captions...")
+        
+        captions = []
+        for i, url in enumerate(post_urls[:total]):
+            print(f"  [{{i+1}}/{{total}}] Scraping: {{url}}")
+            page.goto(url, timeout=60000)
+            time.sleep(3)
+            
+            desc = page.locator("meta[property='og:description']").get_attribute("content")
+            if not desc:
+                desc = page.locator("meta[name='description']").get_attribute("content")
+            
+            if desc:
+                match = re.search(r':\s*"(.*)"\s*\\.?\s*$', desc, re.DOTALL)
+                if not match:
+                    match = re.search(r":\s*'(.*)'\s*\\.?\s*$", desc, re.DOTALL)
+                if match:
+                    captions.append(match.group(1).strip())
+                else:
+                    parts = desc.split("on Instagram: ")
+                    if len(parts) > 1:
+                        captions.append(parts[1].strip())
+                        
+        print("\\n" + "="*50)
+        print(f" SCRAPED DATA SUMMARY FOR @{{target_username}}")
+        print("="*50)
+        print(f"Total Captions Extracted: {{len(captions)}}")
+        for idx, cap in enumerate(captions):
+            print(f"\\nPost {{idx+1}}:")
+            print(f"  {{cap[:120]}}...")
+        print("="*50)
+        browser.close()
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python3 instalens_cli.py <instagram_username> [max_posts]")
+        sys.exit(1)
+    target = sys.argv[1].replace("@", "")
+    posts = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+    run_scraper(target, posts)
+"""
+    return Response(
+        cli_template,
+        mimetype="text/plain",
+        headers={"Content-Disposition": "attachment;filename=instalens_cli.py"}
+    )
+
+
+@app.route("/match_stream", methods=["POST"])
+def match_stream():
+    """Stream matchmaking calculation steps and results using SSE."""
+    profile_a_source = request.form.get("profile_a_source", "text").strip().lower()
+    profile_a_val = request.form.get("profile_a_val", "").strip()
+    profile_b_source = request.form.get("profile_b_source", "text").strip().lower()
+    profile_b_val = request.form.get("profile_b_val", "").strip()
+
+    login_user = request.form.get("login_username", "").strip()
+    login_pass = request.form.get("login_password", "").strip() or None
+    max_posts = int(request.form.get("max_posts", 15))
+
+    if not profile_a_val or not profile_b_val:
+        return jsonify({"error": "Both inputs for Profile A and Profile B are required."}), 400
+
+    def generate():
+        import json
+        try:
+            yield f"data: {json.dumps({'status': 'Initializing Matchmaker workspace...'})}\n\n"
+
+            def analyze_profile_source(source_type, val, label):
+                if source_type == "scrape":
+                    if not login_user:
+                        raise Exception(f"Instagram session needed to scrape target {label}.")
+                    yield f"data: {json.dumps({'status': f'Spawning browser for {label} (@{val})...'})}\n\n"
+                    target_username = extract_username_from_url(val)
+                    profile_generator = scrape_profile(
+                        target_username=target_username,
+                        login_username=login_user,
+                        login_password=login_pass,
+                        max_posts=max_posts,
+                        source="posts",
+                    )
+                    profile_data = None
+                    for item in profile_generator:
+                        if isinstance(item, str):
+                            yield f"data: {json.dumps({'status': f'[{label}] {item}'})}\n\n"
+                        elif isinstance(item, dict):
+                            profile_data = item
+                    if not profile_data:
+                        raise Exception(f"Failed to scrape profile for {label}.")
+                    yield f"data: {json.dumps({'status': f'Analyzing scraped captions for {label}...'})}\n\n"
+                    return run_analysis(profile_data["captions"], profile_info=profile_data, source="posts")
+                else:
+                    yield f"data: {json.dumps({'status': f'Processing manual text input for {label}...'})}\n\n"
+                    chunks = [c.strip() for c in val.split("\n\n") if c.strip()]
+                    if not chunks:
+                        chunks = [val]
+                    return run_analysis(chunks)
+
+            # 1. Analyze Profile A
+            gen_a = analyze_profile_source(profile_a_source, profile_a_val, "Profile A")
+            report_a = None
+            try:
+                while True:
+                    yield next(gen_a)
+            except StopIteration as e:
+                report_a = e.value
+
+            # 2. Analyze Profile B
+            gen_b = analyze_profile_source(profile_b_source, profile_b_val, "Profile B")
+            report_b = None
+            try:
+                while True:
+                    yield next(gen_b)
+            except StopIteration as e:
+                report_b = e.value
+
+            yield f"data: {json.dumps({'status': 'Running Cosine & Jaccard compatibility matrices...'})}\n\n"
+            
+            # 3. Compute Compatibility Match
+            match_report = calculate_compatibility(report_a, report_b)
+            
+            # Add labels to reports for rendering
+            match_report["is_match"] = True
+            match_report["profile_a_label"] = f"@{extract_username_from_url(profile_a_val)}" if profile_a_source == "scrape" else "Profile A (Text)"
+            match_report["profile_b_label"] = f"@{extract_username_from_url(profile_b_val)}" if profile_b_source == "scrape" else "Profile B (Text)"
+            
+            yield f"data: {json.dumps({'report': match_report})}\n\n"
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":

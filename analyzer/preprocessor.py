@@ -16,10 +16,10 @@ import spacy
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
-    raise RuntimeError(
-        "spaCy English model not found. Install it with:\n"
-        "  python -m spacy download en_core_web_sm"
-    )
+    print("[InstaLens] spaCy English model not found. Downloading 'en_core_web_sm'...")
+    import spacy.cli
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
 
 # Custom stopwords common in Instagram/social media
 SOCIAL_STOPWORDS = {

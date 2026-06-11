@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python Version">
 </p>
 
-InstaLens is a premium, developer-friendly Instagram OSINT & content analysis tool. It automatically fetches profile details, posts, reels, and reposts, processes screenshots using OCR, and applies token-based NLP analysis to categorize interests and recommend personalized conversation starters.
+InstaLens is a premium, developer-friendly Instagram OSINT & content analysis tool. It automatically fetches profile details, posts, reels, and reposts, processes screenshots using OCR, and applies token-based NLP analysis to categorize interests, predict partner compatibility, and suggest conversation icebreakers.
 
 ---
 
@@ -16,6 +16,15 @@ InstaLens is a premium, developer-friendly Instagram OSINT & content analysis to
 *   🤖 **Dual Scraping Modes**:
     *   **Auto Scrape**: Automated Playwright browser crawler to scrape target profiles, post grids, reels, or the **Reposts** section.
     *   **Manual Input**: Drag-and-drop screenshots or paste raw text.
+*   🕵️ **Activity Spy**: Live tracking and real-time monitoring of targets (extracting liked posts, liked reels, and activity timelines).
+*   💖 **Dating & Partner Matchmaker**:
+    *   Calculates partner compatibility between two profiles (Scraped profile vs Scraped profile, Scraped vs Manual paste, or Manual text blocks).
+    *   Executes **Cosine Similarity** over topic vectors, **Jaccard Similarity** over hashtag sets, determines a compatibility tier, and prints a customized narrative description.
+    *   Renders shared and unique interests in Venn-diagram chips alongside custom bridge icebreakers.
+*   🌐 **Deep Profile Wide Matching**:
+    *   **Bio Injection**: Public profile biographies are prepended as the first caption for rich NLP interest extraction.
+    *   **Reposts & Tagged Tab Fallbacks**: If a profile has fewer posts than the scraping limit, the system automatically crawls their **Reposts** (`/reposts/`) and **Tagged** (`/tagged/`) posts tabs.
+    *   **Zero-Post Fallback**: If a profile has no posts, tagged posts, or biography, the engine falls back to metadata counts (followers/following) to prevent analysis exceptions.
 *   🖼️ **Tesseract OCR Integration**: Instantly extract text and captions from uploaded images or screenshot logs.
 *   🧠 **Token-Based NLP Taxonomy**: Pre-configured taxonomy with high-precision classification models covering dozens of popular categories (e.g., Tech, Gaming, Fitness, Travel, Finance).
 *   🛡️ **Smart Login Security Bypass**: Automatically prompts and executes in **Headful Mode** (`headless=False`) if Instagram triggers security verifications (SMS/Email OTP or Captchas), letting you authenticate securely.
@@ -25,7 +34,7 @@ InstaLens is a premium, developer-friendly Instagram OSINT & content analysis to
 ## 🛠️ Tech Stack
 
 *   **Language & Runtime**: Python 3.11+
-*   **Web Framework**: Flask
+*   **Web Framework**: Flask (with Server-Sent Events SSE streaming)
 *   **Automation**: Playwright (Chromium)
 *   **OCR**: Tesseract OCR (via `pytesseract`)
 
@@ -62,6 +71,22 @@ playwright install chromium
 python app.py
 ```
 Open **`http://localhost:5000`** in your browser to start using InstaLens.
+
+---
+
+## 🐳 Running with Docker (Recommended for Portability)
+
+To run InstaLens on any device without manually installing system dependencies like Tesseract OCR or configuring virtual environments, you can use Docker:
+
+### 1. Build and Start Container
+```bash
+docker compose up --build
+```
+
+### 2. Access the Application
+Open **`http://localhost:5000`** in your web browser. 
+
+*Note: Dynamically created Instagram session profiles (`playwright_session_*.json`) are automatically persisted on your host machine via volume mounts.*
 
 ---
 

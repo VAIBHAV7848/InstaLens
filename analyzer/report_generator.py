@@ -10,6 +10,7 @@ Produces:
 """
 
 import random
+from .vibe_analyzer import analyze_vibe
 
 
 # -----------------------------------------------------------------
@@ -168,7 +169,7 @@ def generate_conversation_suggestions(
     return suggestions[:max_suggestions]
 
 
-def generate_summary_sentence(topics: list[dict]) -> str:
+def generate_summary_sentence(topics: list[dict], source: str = "posts") -> str:
     """
     Generate a human-readable summary sentence.
 
@@ -177,6 +178,7 @@ def generate_summary_sentence(topics: list[dict]) -> str:
 
     Args:
         topics: Sorted list of topic dicts
+        source: Source of content (posts/reposts/following)
 
     Returns:
         Summary sentence string
@@ -198,15 +200,19 @@ def generate_summary_sentence(topics: list[dict]) -> str:
     else:
         topics_str = ", ".join(topic_names[:-1]) + f", and {topic_names[-1]}"
 
+    if source == "following":
+        return f"This profile follows accounts related to {topics_str}."
     return f"This profile mostly engages with content about {topics_str}."
 
 
-def generate_report(analysis_results: dict) -> dict:
+def generate_report(analysis_results: dict, source: str = "posts", profile_info: dict = None) -> dict:
     """
     Generate the final structured report from analysis results.
 
     Args:
         analysis_results: Output from topic_analyzer.analyze()
+        source: Source of content (posts/reposts/following)
+        profile_info: Scraped profile data including posts_detail
 
     Returns:
         Complete report dict with all output fields
@@ -254,7 +260,10 @@ def generate_report(analysis_results: dict) -> dict:
     suggestions = generate_conversation_suggestions(topics)
 
     # Summary sentence
-    summary = generate_summary_sentence(topics)
+    summary = generate_summary_sentence(topics, source=source)
+
+    # Vibe & Style analysis
+    vibe = analyze_vibe(analysis_results.get("clean_texts", []))
 
     # Overall confidence score (average of top 3 topics)
     if top_topics:
@@ -262,6 +271,66 @@ def generate_report(analysis_results: dict) -> dict:
         overall_confidence = round(sum(top_confidences) / len(top_confidences), 1)
     else:
         overall_confidence = 0
+
+    # Engagement & Format Analytics
+    engagement_analytics = {
+        "total_likes": 0,
+        "total_comments": 0,
+        "avg_likes": 0.0,
+        "avg_comments": 0.0,
+        "engagement_rate": 0.0,
+        "format_distribution": {"Reel": 0.0, "Carousel": 0.0, "Image": 0.0},
+        "weekday_distribution": {
+            "Monday": 0, "Tuesday": 0, "Wednesday": 0, "Thursday": 0,
+            "Friday": 0, "Saturday": 0, "Sunday": 0
+        }
+    }
+
+    if profile_info and "posts_detail" in profile_info and profile_info["posts_detail"]:
+        details = profile_info["posts_detail"]
+        total_posts = len(details)
+        
+        total_likes = sum(d.get("likes", 0) for d in details)
+        total_comments = sum(d.get("comments", 0) for d in details)
+        
+        avg_likes = round(total_likes / total_posts, 1) if total_posts > 0 else 0.0
+        avg_comments = round(total_comments / total_posts, 1) if total_posts > 0 else 0.0
+        
+        followers = profile_info.get("followers", 0)
+        if followers > 0 and total_posts > 0:
+            # Average interaction rate per post: ((Interactions / Posts) / Followers) * 100
+            er = round((((total_likes + total_comments) / total_posts) / followers) * 100, 2)
+        else:
+            # Fallback to post-based ER approximation if follower count is missing
+            er = round(((avg_likes + avg_comments) / 1000) * 100, 2)
+            
+        engagement_analytics["total_likes"] = total_likes
+        engagement_analytics["total_comments"] = total_comments
+        engagement_analytics["avg_likes"] = avg_likes
+        engagement_analytics["avg_comments"] = avg_comments
+        engagement_analytics["engagement_rate"] = er
+        
+        # Format distribution
+        formats = [d.get("format", "Image") for d in details]
+        if formats:
+            for fmt_name in ["Reel", "Carousel", "Image"]:
+                count = formats.count(fmt_name)
+                engagement_analytics["format_distribution"][fmt_name] = round((count / len(formats)) * 100, 1)
+                
+        # Weekday distribution
+        from datetime import datetime
+        for d in details:
+            date_str = d.get("date", "")
+            if date_str:
+                for fmt in ("%B %d, %Y", "%b %d, %Y"):
+                    try:
+                        dt = datetime.strptime(date_str.strip(), fmt)
+                        day_name = dt.strftime("%A")
+                        if day_name in engagement_analytics["weekday_distribution"]:
+                            engagement_analytics["weekday_distribution"][day_name] += 1
+                        break
+                    except ValueError:
+                        continue
 
     return {
         "summary": summary,
@@ -273,4 +342,6 @@ def generate_report(analysis_results: dict) -> dict:
         "important_keywords": important_keywords,
         "notable_entities": notable_entities,
         "conversation_suggestions": suggestions,
+        "vibe": vibe,
+        "engagement_analytics": engagement_analytics
     }
