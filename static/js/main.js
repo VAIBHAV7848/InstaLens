@@ -219,10 +219,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activePanel) activePanel.classList.add("active");
     }
 
+    const tabClean = document.getElementById("tab-clean");
     if (tabAuto) tabAuto.addEventListener("click", () => switchMode("auto"));
     if (tabSpy) tabSpy.addEventListener("click", () => switchMode("spy"));
     if (tabManual) tabManual.addEventListener("click", () => switchMode("manual"));
     if (tabMatch) tabMatch.addEventListener("click", () => switchMode("match"));
+    if (tabClean) tabClean.addEventListener("click", () => switchMode("clean"));
 
     // ---- Matchmaker Input Source Toggles ----
     if (matchASource && matchAScrapeGroup && matchATextGroup) {

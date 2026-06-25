@@ -7,6 +7,7 @@ Supports both automatic profile scraping and manual text input.
 
 import os
 import tempfile
+import urllib.request
 
 from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context
 
@@ -17,6 +18,8 @@ from analyzer.report_generator import generate_report
 from analyzer.scraper import scrape_profile, extract_username_from_url, create_loader, spy_target_activity
 from analyzer.taxonomy_manager import load_taxonomy, save_taxonomy
 from analyzer.matchmaker import calculate_compatibility
+from analyzer.cleaner import fetch_connections, unfollow_user, remove_follower
+import json
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max upload
@@ -584,6 +587,120 @@ def match_stream():
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return Response(stream_with_context(generate()), mimetype="text/event-stream")
+
+
+@app.route("/api/clean_account/fetch", methods=["POST"])
+def clean_account_fetch():
+    """Stream fetching of followers/following lists."""
+    login_user = session.get("instagram_user")
+    connection_type = request.form.get("type", "following").strip()
+    
+    if not login_user:
+        return jsonify({"error": "Not logged in."}), 401
+        
+    def generate():
+        try:
+            for item in fetch_connections(login_user, connection_type=connection_type):
+                yield f"data: {json.dumps(item)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
+
+
+@app.route("/api/clean_account/unfollow", methods=["POST"])
+def clean_account_unfollow():
+    login_user = session.get("instagram_user")
+    if not login_user:
+        return jsonify({"error": "Not logged in."}), 401
+        
+    data = request.get_json() or {}
+    target = data.get("target")
+    if not target:
+        return jsonify({"error": "Missing target."}), 400
+        
+    try:
+        success = unfollow_user(target, login_user)
+        return jsonify({"success": success})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/clean_account/remove_follower", methods=["POST"])
+def clean_account_remove_follower():
+    """Remove a follower from your account."""
+    login_user = session.get("instagram_user")
+    if not login_user:
+        return jsonify({"error": "Not logged in."}), 401
+
+    data = request.get_json() or {}
+    target = data.get("target")
+    if not target:
+        return jsonify({"error": "Missing target."}), 400
+
+    try:
+        success = remove_follower(target, login_user)
+        return jsonify({"success": success})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/clean_account/whitelist", methods=["GET", "POST"])
+def clean_account_whitelist():
+    login_user = session.get("instagram_user")
+    if not login_user:
+        return jsonify({"error": "Not logged in."}), 401
+        
+    whitelist_file = f"whitelist_{login_user}.json"
+    
+    if request.method == "GET":
+        if os.path.exists(whitelist_file):
+            with open(whitelist_file, "r") as f:
+                return jsonify(json.load(f))
+        return jsonify([])
+    else:
+        data = request.get_json() or []
+        with open(whitelist_file, "w") as f:
+            json.dump(data, f)
+        return jsonify({"success": True})
+
+
+ALLOWED_IMAGE_DOMAINS = (
+    "cdninstagram.com",
+    "fbcdn.net",
+    "instagram.com",
+)
+
+
+@app.route("/api/proxy_image")
+def proxy_image():
+    """Proxy Instagram CDN images to bypass CORS/CORP restrictions."""
+    url = request.args.get("url", "")
+    if not url:
+        return "", 404
+
+    # Security: only proxy known Instagram CDN domains
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if not any(parsed.hostname and parsed.hostname.endswith(d) for d in ALLOWED_IMAGE_DOMAINS):
+        return jsonify({"error": "Domain not allowed"}), 403
+
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Referer": "https://www.instagram.com/",
+            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+        })
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            img_data = resp.read()
+            content_type = resp.headers.get("Content-Type", "image/jpeg")
+            return Response(
+                img_data,
+                content_type=content_type,
+                headers={"Cache-Control": "public, max-age=86400"}  # Cache 24h
+            )
+    except Exception:
+        return "", 502
 
 
 if __name__ == "__main__":
